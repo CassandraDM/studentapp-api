@@ -7,7 +7,17 @@ import * as bcrypt from 'bcrypt';
 @Injectable()
 export class AuthService {
   constructor(private readonly userService: UserService) {}
-  signin(SigninDto: SigninDto) {
+  async signin(SigninDto: SigninDto) {
+    //check if user exists & get user
+    const user = await this.userService.findOneByEmail(SigninDto.email);
+    if (!user) {
+      return 'Mismatch';
+    }
+    //check if password is correct
+    const isValid = await bcrypt.compare(SigninDto.password, user.password);
+    if (!isValid) {
+      return 'Mismatch';
+    }
     return 'You are signed in';
   }
 
