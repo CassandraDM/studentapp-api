@@ -3,10 +3,14 @@ import { SignupDto } from './dto/signup.dto';
 import { SigninDto } from './dto/signin.dto';
 import { UserService } from 'src/user/user.service';
 import * as bcrypt from 'bcrypt';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class AuthService {
-  constructor(private readonly userService: UserService) {}
+  constructor(
+    private readonly userService: UserService,
+    private readonly jwtService: JwtService,
+  ) {}
   async signin(SigninDto: SigninDto) {
     //check if user exists & get user
     const user = await this.userService.findOneByEmail(SigninDto.email);
@@ -18,7 +22,12 @@ export class AuthService {
     if (!isValid) {
       return 'Mismatch';
     }
-    return 'You are signed in';
+
+    //token
+    const payload = { email: user.email, id: user.id };
+    const token = this.jwtService.sign(payload);
+
+    return token;
   }
 
   async signup(SignupDto: SignupDto) {
